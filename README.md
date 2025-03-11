@@ -1,4 +1,4 @@
-Now i have some registers, like on 8086<br>
+Now i have some registers, like on x86-64 processors<br>
 ![image](https://github.com/user-attachments/assets/02d52dcc-6fc9-4397-929e-83195fafa6ee)
 <br>
 
