@@ -80,16 +80,6 @@ public class Registers {
         }
     }
 
-    // Set flag value
-    public void setFlag(String flag, boolean value) {
-        flags.put(flag, value);
-    }
-
-    // Get flag value
-    public boolean getFlag(String flag) {
-        return flags.getOrDefault(flag, false);
-    }
-
     // Print a dump of all registers
     public void dumpRegisters() {
         System.out.println("==== CPU Registers ====");
