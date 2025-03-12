@@ -10,11 +10,6 @@ public class CPU {
         this.memory = new Memory();
     }
 
-    // Prints current register state
-    public void dumpRegisters() {
-        registers.dumpRegisters();
-    }
-
     // Parses and executes a command
     public void executeInstruction(String command) {
         command = command.replace(",", ""); // Remove commas if present
@@ -26,6 +21,9 @@ public class CPU {
 
         String instruction = parts[0].toUpperCase(); // Command name
         String[] operands = Arrays.copyOfRange(parts, 1, parts.length); // Operands
+        if(isRegister(operands[0].toUpperCase())) {
+            operands[0] = operands[0].toUpperCase();
+        }
 
         switch (instruction) {
             case "MOV":
@@ -54,7 +52,7 @@ public class CPU {
                 show(operands[0]);
                 break;
             case "RDUMP":
-                dumpRegisters();
+                registers.dumpRegisters();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown instruction: " + instruction);
