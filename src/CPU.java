@@ -59,6 +59,10 @@ public class CPU {
                 if (operands.length != 1) throw new IllegalArgumentException("POP requires 1 operand");
                 pop(operands[0]);
                 break;
+            case "SHOW":
+                if (operands.length != 1) throw new IllegalArgumentException("SHOW requires 1 operand");
+                show(operands[0]);
+                break;
             case "RDUMP":
                 dumpRegisters();
                 break;
@@ -142,6 +146,14 @@ public class CPU {
 
         stackPointer += 8; // Move stack pointer up
         registers.setRegister(dest, value); // Store value in register
+    }
+
+    //Shows 1 register in console
+    private void show(String dest){
+        if (!isRegister(dest)) {
+            throw new IllegalArgumentException("Destination must be a register: " + dest);
+        }
+        System.out.println(registers.getRegister(dest));
     }
 
     // Converts an operand into a numeric value
