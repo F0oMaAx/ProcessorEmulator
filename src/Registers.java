@@ -64,11 +64,22 @@ public class Registers {
 
     // Set register value
     public void setRegister(String reg, long value) {
-        if (registers.containsKey(reg)) {
-            registers.put(reg, value);
-        } else {
+        if (!registers.containsKey(reg)) {
             throw new IllegalArgumentException("Unknown register: " + reg);
         }
+
+        // Apply mask on registers, lower than 64 bits
+        if (reg.matches("E[A-Z][XSI]*|R[8-9D]|R1[0-5]D")) {
+            value &= 0xFFFFFFFFL; // 32-bit register
+        } else if (reg.matches("[A-D]X|S[I-P]|R8W|R9W|R1[0-5]W")) {
+            value &= 0xFFFF; // 16-bit register
+        } else if (reg.matches("[A-D]L|[SDB]PL|R8B|R9B|R1[0-5]B")) {
+            value &= 0xFF; // 8-bit register (low)
+        } else if (reg.matches("[A-D]H")) {
+            value = (value & 0xFF) << 8; // 8-bit high-register
+        }
+
+        registers.put(reg, value);
     }
 
     // Get register value

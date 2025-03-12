@@ -4,14 +4,10 @@ import java.util.HexFormat;
 public class CPU {
     private final Registers registers = new Registers(); // Processor registers
     private final Memory memory; // RAM
-    long stackBase;
 
     // Constructor: initializes CPU with memory and stack
     public CPU() {
         this.memory = new Memory();
-        //this.stackBase = memory.memorySize - 1024; // Reserve 1Kb for stack
-        registers.setRegister("SS", stackBase); // Set stack segment
-        registers.setRegister("RSP", memory.memorySize); // Set stack pointer
     }
 
     // Prints current register state
