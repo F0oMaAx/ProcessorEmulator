@@ -3,7 +3,7 @@ Now i have some registers, like on x86-64 processors<br>
 <br>
 
 And some instructions:
-ADD, SUB, AND, OR, XOR, MUL, DIV, MOV, NEG, NOT, LSL, LSR, CMP  <br>
+ADD, SUB, AND, OR, MUL, DIV, MOV  <br>
 PUSH and POP not working, stack in develop                      <br>
 RDUMP is debug instruction, for dump every register in console  <br>
 
