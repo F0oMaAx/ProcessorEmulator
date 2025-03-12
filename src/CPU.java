@@ -51,22 +51,93 @@ public class CPU {
 
         // Выполняем инструкцию
         switch (instruction) {
+            case "MOV":
+                if (operands.length != 2) throw new IllegalArgumentException("MOV требует 2 операнда");
+                mov(operands[0], operands[1]);
+                break;
+            case "ADD":
+                if (operands.length != 2) throw new IllegalArgumentException("ADD требует 2 операнда");
+                add(operands[0], operands[1]);
+                break;
+            case "SUB":
+                if (operands.length != 2) throw new IllegalArgumentException("SUB требует 2 операнда");
+                sub(operands[0], operands[1]);
+                break;
+            case "AND":
+                if (operands.length != 2) throw new IllegalArgumentException("AND требует 2 операнда");
+                and(operands[0], operands[1]);
+                break;
+            case "OR":
+                if (operands.length != 2) throw new IllegalArgumentException("OR требует 2 операнда");
+                or(operands[0], operands[1]);
+                break;
+            case "MUL":
+                if (operands.length != 2) throw new IllegalArgumentException("MUL требует 2 операнда");
+                mul(operands[0], operands[1]);
+                break;
+            case "DIV":
+                if (operands.length != 2) throw new IllegalArgumentException("DIV требует 2 операнда");
+                div(operands[0], operands[1]);
+                break;
+            case "RDUMP":
+                registers.dumpRegisters();
+                break;
             case "PUSH":
-                if (operands.length != 1) throw new IllegalArgumentException("PUSH requires 1 operand");
+                if (operands.length != 1) throw new IllegalArgumentException("PUSH требует 1 операнд");
                 push(operands[0]);
                 break;
             case "POP":
-                if (operands.length != 1) throw new IllegalArgumentException("POP requires 1 operand");
+                if (operands.length != 1) throw new IllegalArgumentException("POP требует 1 операнд");
                 pop(operands[0]);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown instruction: " + instruction);
+                throw new IllegalArgumentException("Неизвестная инструкция: " + instruction);
         }
     }
 
     /**
+     * MOV - копирует значение в регистр.
+     */
+    private void mov(String dest, String src) {
+        if (!isRegister(dest)) {
+            throw new IllegalArgumentException("Назначение должно быть регистром: " + dest);
+        }
+        registers.setRegister(dest, parseValue(src));
+    }
+
+    /**
+     * Арифметические и логические операции.
+     */
+    private void add(String dest, String src) {
+        registers.setRegister(dest, registers.getRegister(dest) + parseValue(src));
+    }
+
+    private void sub(String dest, String src) {
+        registers.setRegister(dest, registers.getRegister(dest) - parseValue(src));
+    }
+
+    private void and(String dest, String src) {
+        registers.setRegister(dest, registers.getRegister(dest) & parseValue(src));
+    }
+
+    private void or(String dest, String src) {
+        registers.setRegister(dest, registers.getRegister(dest) | parseValue(src));
+    }
+
+    private void mul(String dest, String src) {
+        registers.setRegister(dest, registers.getRegister(dest) * parseValue(src));
+    }
+
+    private void div(String dest, String src) {
+        long divisor = parseValue(src);
+        if (divisor == 0) {
+            throw new ArithmeticException("Деление на ноль");
+        }
+        registers.setRegister(dest, registers.getRegister(dest) / divisor);
+    }
+
+    /**
      * Кладёт значение в стек.
-     * @param src Значение или регистр, откуда брать данные.
      */
     private void push(String src) {
         long value = parseValue(src); // Получаем значение (число или из регистра)
@@ -87,7 +158,6 @@ public class CPU {
 
     /**
      * Извлекает значение из стека и записывает его в регистр.
-     * @param dest Регистр, куда записать значение.
      */
     private void pop(String dest) {
         int ss = (int) registers.getRegister("SS"); // Получаем базовый адрес стека (SS)
@@ -110,8 +180,6 @@ public class CPU {
 
     /**
      * Преобразует операнд в числовое значение.
-     * @param operand Операнд (число, регистр или адрес).
-     * @return Числовое значение операнда.
      */
     private long parseValue(String operand) {
         if (operand.startsWith("0x")) {
@@ -121,14 +189,12 @@ public class CPU {
         } else if (isRegister(operand)) {
             return registers.getRegister(operand); // Значение из регистра
         } else {
-            throw new IllegalArgumentException("Unknown operand: " + operand);
+            throw new IllegalArgumentException("Неизвестный операнд: " + operand);
         }
     }
 
     /**
      * Проверяет, является ли строка именем регистра.
-     * @param operand Строка операнда.
-     * @return true, если это регистр.
      */
     private boolean isRegister(String operand) {
         return operand.matches("[A-Z]+[0-9]*");
