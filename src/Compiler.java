@@ -13,13 +13,13 @@ public class Compiler {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith(";")) {
                     continue;
-                }   // Игнорируем пустые строки и комментарии
+                }   // ignore comments and empty lines
 
-                // Исполняем команду
+                // Executing command
                 cpu.executeInstruction(line);
             }
         } catch (IOException e) {
-            System.err.println("Ошибка чтения файла: " + e.getMessage());
+            System.err.println("File read error: " + e.getMessage());
         }
     }
 
