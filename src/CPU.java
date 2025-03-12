@@ -1,201 +1,165 @@
 import java.util.Arrays;
 
 public class CPU {
-    private final Registers registers = new Registers(); // Регистры процессора
-    private final Memory memory; // ОЗУ процессора
-    private int stackPointer; // Указатель стека (SP)
-    private final int memorySize; // Размер памяти
+    private final Registers registers = new Registers(); // Processor registers
+    private final Memory memory; // RAM
+    private int stackPointer; // Stack pointer (SP)
+    private final int memorySize; // Memory size
 
-    /**
-     * Конструктор процессора.
-     * @param memorySize Размер ОЗУ.
-     * @param stackSize Размер выделенной области под стек.
-     */
+    // Constructor: initializes CPU with memory and stack
     public CPU(int memorySize, int stackSize) {
         this.memory = new Memory(memorySize);
-        int stackBase = memorySize - stackSize; // Определяем начало стека (растёт вниз)
-        registers.setRegister("SS", stackBase); // Устанавливаем регистр SS (Stack Segment)
-        this.stackPointer = stackBase; // Инициализируем указатель стека
+        int stackBase = memorySize - stackSize; // Stack grows downward
+        registers.setRegister("SS", stackBase); // Set stack segment (SS)
+        this.stackPointer = stackBase; // Initialize stack pointer
         this.memorySize = memorySize;
     }
 
-    /**
-     * Выполняет одну инструкцию, переданную в виде строки.
-     * @param instruction Строка с инструкцией (например, "PUSH 10").
-     */
+    // Executes a single instruction
     public void executeInstruction(String instruction) {
         execute(instruction);
     }
 
-    /**
-     * Выводит текущее состояние регистров.
-     */
+    // Prints current register state
     public void dumpRegisters() {
         registers.dumpRegisters();
     }
 
-    /**
-     * Разбирает и выполняет переданную команду.
-     * @param command Инструкция в виде строки.
-     */
+    // Parses and executes a command
     private void execute(String command) {
-        command = command.replace(",", ""); // Убираем запятые (если есть)
-        String[] parts = command.split("\\s+"); // Разделяем строку на части
+        command = command.replace(",", ""); // Remove commas if present
+        String[] parts = command.split("\\s+"); // Split by spaces
 
         if (parts.length < 1) {
             throw new IllegalArgumentException("Invalid command: " + command);
         }
 
-        String instruction = parts[0].toUpperCase(); // Опкод команды
-        String[] operands = Arrays.copyOfRange(parts, 1, parts.length); // Операнды
+        String instruction = parts[0].toUpperCase(); // Command name
+        String[] operands = Arrays.copyOfRange(parts, 1, parts.length); // Operands
 
-        // Выполняем инструкцию
         switch (instruction) {
             case "MOV":
-                if (operands.length != 2) throw new IllegalArgumentException("MOV требует 2 операнда");
+                if (operands.length != 2) throw new IllegalArgumentException("MOV requires 2 operands");
                 mov(operands[0], operands[1]);
                 break;
             case "ADD":
-                if (operands.length != 2) throw new IllegalArgumentException("ADD требует 2 операнда");
-                add(operands[0], operands[1]);
-                break;
             case "SUB":
-                if (operands.length != 2) throw new IllegalArgumentException("SUB требует 2 операнда");
-                sub(operands[0], operands[1]);
-                break;
             case "AND":
-                if (operands.length != 2) throw new IllegalArgumentException("AND требует 2 операнда");
-                and(operands[0], operands[1]);
-                break;
             case "OR":
-                if (operands.length != 2) throw new IllegalArgumentException("OR требует 2 операнда");
-                or(operands[0], operands[1]);
-                break;
             case "MUL":
-                if (operands.length != 2) throw new IllegalArgumentException("MUL требует 2 операнда");
-                mul(operands[0], operands[1]);
-                break;
             case "DIV":
-                if (operands.length != 2) throw new IllegalArgumentException("DIV требует 2 операнда");
-                div(operands[0], operands[1]);
-                break;
-            case "RDUMP":
-                registers.dumpRegisters();
+                if (operands.length != 2) throw new IllegalArgumentException(instruction + " requires 2 operands");
+                arithmeticOperation(instruction, operands[0], operands[1]);
                 break;
             case "PUSH":
-                if (operands.length != 1) throw new IllegalArgumentException("PUSH требует 1 операнд");
+                if (operands.length != 1) throw new IllegalArgumentException("PUSH requires 1 operand");
                 push(operands[0]);
                 break;
             case "POP":
-                if (operands.length != 1) throw new IllegalArgumentException("POP требует 1 операнд");
+                if (operands.length != 1) throw new IllegalArgumentException("POP requires 1 operand");
                 pop(operands[0]);
                 break;
+            case "RDUMP":
+                dumpRegisters();
+                break;
             default:
-                throw new IllegalArgumentException("Неизвестная инструкция: " + instruction);
+                throw new IllegalArgumentException("Unknown instruction: " + instruction);
         }
     }
 
-    /**
-     * MOV - копирует значение в регистр.
-     */
+    // MOV: moves a value to a register
     private void mov(String dest, String src) {
         if (!isRegister(dest)) {
-            throw new IllegalArgumentException("Назначение должно быть регистром: " + dest);
+            throw new IllegalArgumentException("Destination must be a register: " + dest);
         }
         registers.setRegister(dest, parseValue(src));
     }
 
-    /**
-     * Арифметические и логические операции.
-     */
-    private void add(String dest, String src) {
-        registers.setRegister(dest, registers.getRegister(dest) + parseValue(src));
-    }
-
-    private void sub(String dest, String src) {
-        registers.setRegister(dest, registers.getRegister(dest) - parseValue(src));
-    }
-
-    private void and(String dest, String src) {
-        registers.setRegister(dest, registers.getRegister(dest) & parseValue(src));
-    }
-
-    private void or(String dest, String src) {
-        registers.setRegister(dest, registers.getRegister(dest) | parseValue(src));
-    }
-
-    private void mul(String dest, String src) {
-        registers.setRegister(dest, registers.getRegister(dest) * parseValue(src));
-    }
-
-    private void div(String dest, String src) {
-        long divisor = parseValue(src);
-        if (divisor == 0) {
-            throw new ArithmeticException("Деление на ноль");
+    // Performs arithmetic or bitwise operations
+    private void arithmeticOperation(String operation, String dest, String src) {
+        if (!isRegister(dest)) {
+            throw new IllegalArgumentException("Destination must be a register: " + dest);
         }
-        registers.setRegister(dest, registers.getRegister(dest) / divisor);
+
+        long value1 = registers.getRegister(dest);
+        long value2 = parseValue(src);
+        long result;
+
+        switch (operation) {
+            case "ADD": result = value1 + value2; break;
+            case "SUB": result = value1 - value2; break;
+            case "AND": result = value1 & value2; break;
+            case "OR":  result = value1 | value2; break;
+            case "MUL": result = value1 * value2; break;
+            case "DIV":
+                if (value2 == 0) throw new ArithmeticException("Division by zero");
+                result = value1 / value2;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown operation: " + operation);
+        }
+
+        registers.setRegister(dest, result);
     }
 
-    /**
-     * Кладёт значение в стек.
-     */
+    // PUSH: pushes a value onto the stack
     private void push(String src) {
-        long value = parseValue(src); // Получаем значение (число или из регистра)
-        int ss = (int) registers.getRegister("SS"); // Получаем базовый адрес стека (SS)
+        long value = parseValue(src);
+        int ss = (int) registers.getRegister("SS"); // Get stack segment base
 
-        // Проверка на переполнение стека
+        // Stack overflow check
         if (stackPointer - 8 < ss) {
             throw new IllegalStateException("Stack overflow");
         }
 
-        // Записываем 8 байтов (64-битное значение) в память
+        // Write 8 bytes (64-bit value) to memory
         for (int i = 0; i < 8; i++) {
             memory.write(stackPointer - i, (byte) (value >> (i * 8)));
         }
 
-        stackPointer -= 8; // Смещаем стек вниз
+        stackPointer -= 8; // Move stack pointer down
     }
 
-    /**
-     * Извлекает значение из стека и записывает его в регистр.
-     */
+    // POP: pops a value from the stack into a register
     private void pop(String dest) {
-        int ss = (int) registers.getRegister("SS"); // Получаем базовый адрес стека (SS)
+        if (!isRegister(dest)) {
+            throw new IllegalArgumentException("Destination must be a register: " + dest);
+        }
 
-        // Проверка на выход за границы стека
+        int ss = (int) registers.getRegister("SS"); // Get stack segment base
+
+        // Stack underflow check
         if (stackPointer + 8 >= ss + memorySize) {
             throw new IllegalStateException("Stack underflow");
         }
 
         long value = 0;
 
-        // Читаем 8 байтов из памяти и восстанавливаем 64-битное значение
+        // Read 8 bytes from memory and reconstruct 64-bit value
         for (int i = 0; i < 8; i++) {
             value |= ((long) memory.read(stackPointer + i) & 0xFF) << (i * 8);
         }
 
-        stackPointer += 8; // Смещаем стек вверх
-        registers.setRegister(dest, value); // Записываем значение в регистр
+        stackPointer += 8; // Move stack pointer up
+        registers.setRegister(dest, value); // Store value in register
     }
 
-    /**
-     * Преобразует операнд в числовое значение.
-     */
+    // Converts an operand into a numeric value
     private long parseValue(String operand) {
         if (operand.startsWith("0x")) {
-            return Long.parseUnsignedLong(operand.substring(2), 16); // Читаем 16-ричное число
+            return Long.parseUnsignedLong(operand.substring(2), 16); // Hexadecimal
         } else if (operand.matches("\\d+")) {
-            return Long.parseLong(operand); // Число в десятичной системе
+            return Long.parseLong(operand); // Decimal integer
+        } else if (operand.matches("\\d+\\.\\d+")) {
+            return Double.doubleToRawLongBits(Double.parseDouble(operand)); // Convert float to long
         } else if (isRegister(operand)) {
-            return registers.getRegister(operand); // Значение из регистра
+            return registers.getRegister(operand);
         } else {
-            throw new IllegalArgumentException("Неизвестный операнд: " + operand);
+            throw new IllegalArgumentException("Unknown operand: " + operand);
         }
     }
 
-    /**
-     * Проверяет, является ли строка именем регистра.
-     */
+    // Checks if a string is a valid register name
     private boolean isRegister(String operand) {
         return operand.matches("[A-Z]+[0-9]*");
     }
