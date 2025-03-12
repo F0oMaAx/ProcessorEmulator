@@ -1,8 +1,10 @@
 public class Memory {
     private final byte[] memory;
+    public int memorySize;
 
-    public Memory(int size) {
-        memory = new byte[size];
+    public Memory() {
+        memory = new byte[0x00FFFFF]; //16 Mib of memory
+        memorySize = memory.length;
     }
 
     public void write(int address, byte value) {

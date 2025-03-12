@@ -1,10 +1,7 @@
 import java.io.*;
 
 public class Compiler {
-    CPU cpu;
-    public Compiler(int memorySize, int stacksize){
-        this.cpu = new CPU(memorySize, stacksize);
-    }
+    CPU cpu = new CPU();
 
     public void compileAndRun(String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {

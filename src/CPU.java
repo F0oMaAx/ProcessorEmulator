@@ -3,21 +3,14 @@ import java.util.Arrays;
 public class CPU {
     private final Registers registers = new Registers(); // Processor registers
     private final Memory memory; // RAM
-    private int stackPointer; // Stack pointer (SP)
-    private final int memorySize; // Memory size
+    long stackBase;
 
     // Constructor: initializes CPU with memory and stack
-    public CPU(int memorySize, int stackSize) {
-        this.memory = new Memory(memorySize);
-        int stackBase = memorySize - stackSize; // Stack grows downward
-        registers.setRegister("SS", stackBase); // Set stack segment (SS)
-        this.stackPointer = stackBase; // Initialize stack pointer
-        this.memorySize = memorySize;
-    }
-
-    // Executes a single instruction
-    public void executeInstruction(String instruction) {
-        execute(instruction);
+    public CPU() {
+        this.memory = new Memory();
+        this.stackBase = memory.memorySize - 1024; // Reserve 1Kb for stack
+        registers.setRegister("SS", stackBase); // Set stack segment
+        registers.setRegister("RSP", memory.memorySize); // Set stack pointer
     }
 
     // Prints current register state
@@ -26,7 +19,7 @@ public class CPU {
     }
 
     // Parses and executes a command
-    private void execute(String command) {
+    public void executeInstruction(String command) {
         command = command.replace(",", ""); // Remove commas if present
         String[] parts = command.split("\\s+"); // Split by spaces
 
@@ -109,20 +102,22 @@ public class CPU {
     // PUSH: pushes a value onto the stack
     private void push(String src) {
         long value = parseValue(src);
-        int ss = (int) registers.getRegister("SS"); // Get stack segment base
+        long rsp = registers.getRegister("RSP"); // Get stack pointer
+        long ss = registers.getRegister("SS"); // Stack start
 
         // Stack overflow check
-        if (stackPointer - 8 < ss) {
+        if (rsp - 8 < ss) {
             throw new IllegalStateException("Stack overflow");
         }
 
-        // Write 8 bytes (64-bit value) to memory
+        rsp -= 8; // Decrease RSP before record
         for (int i = 0; i < 8; i++) {
-            memory.write(stackPointer - i, (byte) (value >> (i * 8)));
+            memory.write((int) (rsp + i), (byte) (value >> (i * 8)));
         }
 
-        stackPointer -= 8; // Move stack pointer down
+        registers.setRegister("RSP", rsp); // Update RSP
     }
+
 
     // POP: pops a value from the stack into a register
     private void pop(String dest) {
@@ -130,30 +125,30 @@ public class CPU {
             throw new IllegalArgumentException("Destination must be a register: " + dest);
         }
 
-        int ss = (int) registers.getRegister("SS"); // Get stack segment base
+        long rsp = registers.getRegister("RSP");
+        long stackLimit = memory.memorySize; // Upper stack border..?
 
-        // Stack underflow check
-        if (stackPointer + 8 >= ss + memorySize) {
+        // Erase stack check
+        if (rsp + 8 > stackLimit) {
             throw new IllegalStateException("Stack underflow");
         }
 
         long value = 0;
-
-        // Read 8 bytes from memory and reconstruct 64-bit value
         for (int i = 0; i < 8; i++) {
-            value |= ((long) memory.read(stackPointer + i) & 0xFF) << (i * 8);
+            value |= ((long) memory.read((int) (rsp + i)) & 0xFF) << (i * 8);
         }
 
-        stackPointer += 8; // Move stack pointer up
-        registers.setRegister(dest, value); // Store value in register
+        registers.setRegister(dest, value); // Record in register
+        registers.setRegister("RSP", rsp + 8); // Update RSP
     }
+
 
     //Shows 1 register in console
     private void show(String dest){
         if (!isRegister(dest)) {
             throw new IllegalArgumentException("Destination must be a register: " + dest);
         }
-        System.out.println(registers.getRegister(dest));
+        System.out.println(dest + " " + registers.getRegister(dest));
     }
 
     // Converts an operand into a numeric value
