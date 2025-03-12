@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.HexFormat;
 
 public class CPU {
     private final Registers registers = new Registers(); // Processor registers
@@ -8,7 +9,7 @@ public class CPU {
     // Constructor: initializes CPU with memory and stack
     public CPU() {
         this.memory = new Memory();
-        this.stackBase = memory.memorySize - 1024; // Reserve 1Kb for stack
+        //this.stackBase = memory.memorySize - 1024; // Reserve 1Kb for stack
         registers.setRegister("SS", stackBase); // Set stack segment
         registers.setRegister("RSP", memory.memorySize); // Set stack pointer
     }
@@ -148,7 +149,7 @@ public class CPU {
         if (!isRegister(dest)) {
             throw new IllegalArgumentException("Destination must be a register: " + dest);
         }
-        System.out.println(dest + " " + registers.getRegister(dest));
+        System.out.println(dest + " " + registers.getRegister(dest) + " " + String.format("0x%016X", registers.getRegister(dest)));
     }
 
     // Converts an operand into a numeric value
