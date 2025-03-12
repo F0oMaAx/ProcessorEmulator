@@ -7,6 +7,9 @@ ADD, SUB, AND, OR, MUL, DIV, MOV, PUSH, POP  <br>
 STACK WAS WORKING, BABY                      <br>
 RDUMP, SHOW is debug instruction, 
 for dump every register or
-show single register in console                        <br>
+show single register in console              <br>
 
 DISPLAY IN DEVELOP                           <br>  
+
+known issues:                                <br>
+    1. I cant make or solve negative numbers <br>

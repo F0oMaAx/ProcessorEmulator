@@ -47,6 +47,8 @@ public class CPU {
                 if (operands.length != 1) throw new IllegalArgumentException("POP requires 1 operand");
                 pop(operands[0]);
                 break;
+
+            //debug
             case "SHOW":
                 if (operands.length != 1) throw new IllegalArgumentException("SHOW requires 1 operand");
                 show(operands[0]);
