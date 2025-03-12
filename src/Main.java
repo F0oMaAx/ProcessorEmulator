@@ -1,6 +1,5 @@
 public class Main {
     public static void main(String[] args) {
-
         double startTime = System.nanoTime();
 
         Compiler compiler = new Compiler();
