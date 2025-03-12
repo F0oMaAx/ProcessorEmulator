@@ -3,8 +3,8 @@ import java.util.*;
 
 public class Compiler {
     CPU cpu;
-    public Compiler(int memorySize){
-        this.cpu = new CPU(memorySize);
+    public Compiler(int memorySize, int stacksize){
+        this.cpu = new CPU(memorySize, stacksize);
     }
 
     public void compileAndRun(String filename) {
@@ -12,11 +12,9 @@ public class Compiler {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-
-                // Игнорируем пустые строки и комментарии
                 if (line.isEmpty() || line.startsWith(";")) {
                     continue;
-                }
+                }   // Игнорируем пустые строки и комментарии
 
                 // Исполняем команду
                 cpu.executeInstruction(line);
